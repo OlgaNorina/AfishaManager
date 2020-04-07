@@ -17,7 +17,7 @@ public class AfishaRepository {
         return null;
     }
 
-    void save(AfishaItem item) {
+    public void save(AfishaItem item) {
         int length = items.length + 1;
         AfishaItem[] tmp = new AfishaItem[length];
 

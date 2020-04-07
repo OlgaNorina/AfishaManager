@@ -1,11 +1,20 @@
 package ru.netology.manager;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class AfishaManagerTest {
-    AfishaManager manager = new AfishaManager(new AfishaRepository());
+    @Mock
+    private AfishaRepository repository;
+    @InjectMocks
+    private AfishaManager manager;
 
     AfishaItem first = new AfishaItem(1, "Фильм1", "http://1.ru", "comedy");
     AfishaItem second = new AfishaItem(2, "Фильм2", "http://2.ru", "drama");
@@ -23,24 +32,35 @@ class AfishaManagerTest {
 
     @Test
     void shouldAdd() {
-
         manager.add(first);
         manager.add(second);
         manager.add(third);
 
+        AfishaItem[] returned = new AfishaItem[]{first, second, third};
+        doReturn(returned).when(repository).findAll();
+        doNothing().when(repository).save(fourth);
+
+        manager.add(fourth);
         AfishaItem[] actual = manager.getLastItems();
         AfishaItem[] expected = new AfishaItem[]{third, second, first};
 
         assertArrayEquals(expected, actual);
+        verify(repository).save(fourth);
     }
 
     @Test
     void shoulAfishaEmpty() {
 
+        AfishaItem[] returned = new AfishaItem[]{};
+        doReturn(returned).when(repository).findAll();
+        doNothing().when(repository).save(first);
+
+        manager.add(first);
         AfishaItem[] actual = manager.getLastItems();
         AfishaItem[] expected = new AfishaItem[]{};
 
         assertArrayEquals(expected, actual);
+        verify(repository, times(1)).save(first);
     }
 
     @Test
@@ -57,11 +77,18 @@ class AfishaManagerTest {
         manager.add(ninth);
         manager.add(tenth);
         manager.add(eleventh);
-        manager.add(twelfth);
 
+        AfishaItem[] returned = new AfishaItem[]
+                {first, second, third, fourth, fifth, sixth, seventh, eighth, ninth, tenth};
+        doReturn(returned).when(repository).findAll();
+        doNothing().when(repository).save(twelfth);
+
+        manager.add(twelfth);
         AfishaItem[] actual = manager.getLastItems();
-        AfishaItem[] expected = new AfishaItem[]{twelfth, eleventh, tenth, ninth, eighth, seventh, sixth, fifth, fourth, third};
+        AfishaItem[] expected = new AfishaItem[]
+                {tenth, ninth, eighth, seventh, sixth, fifth, fourth, third, second, first};
 
         assertArrayEquals(expected, actual);
+        verify(repository, times(1)).save(twelfth);
     }
 }
